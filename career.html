@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Path</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <section class="career-section">
+        <div class="career-header">
+            <h2>Tu Camino Profesional</h2>
+            <p class="career-subtitle">Sigue estos pasos para alcanzar tu trabajo soñado</p>
+        </div>
+        
+        <div class="career-content">
+            <div class="career-container">
+                <div class="career-card">
+                    <!-- Selector de carrera -->
+                    <div class="career-selector">
+                        <label for="careerSelect">Elige tu carrera objetivo:</label>
+                        <select id="careerSelect" onchange="loadCareerPath()">
+                            <option value="">Selecciona una carrera</option>
+                            <option value="fullstack">Full Stack Developer</option>
+                            <option value="frontend">Frontend Developer</option>
+                            <option value="backend">Backend Developer</option>
+                        </select>
+                    </div>
+
+                    <!-- Roadmap visual -->
+                    <div class="career-roadmap" id="careerRoadmap">
+                        <div class="roadmap-placeholder">
+                            <div class="placeholder-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                                </svg>
+                            </div>
+                            <h3>Selecciona una carrera para ver tu roadmap</h3>
+                            <p>Elige una especialización arriba para descubrir los pasos que necesitas seguir</p>
+                        </div>
+                    </div>
+
+                    <!-- Progreso general -->
+                    <div class="career-progress" id="careerProgress" style="display: none;">
+                        <div class="progress-header">
+                            <h3>Tu Progreso</h3>
+                            <span class="progress-percentage" id="progressPercentage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p class="progress-text" id="progressText">Completa los pasos para avanzar en tu carrera</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Definir los roadmaps básicos de cada carrera
+        const careerPaths = {
+            fullstack: {
+                title: "Full Stack Developer",
+                description: "Domina tanto frontend como backend",
+                steps: [
+                    { title: "Fundamentos de Programación", description: "Aprende lógica de programación y algoritmos básicos", skills: ["Variables", "Funciones", "Algoritmos"], timeframe: "2-3 meses", level: "beginner" },
+                    { title: "HTML, CSS y JavaScript", description: "Domina las tecnologías frontend fundamentales", skills: ["HTML", "CSS", "JavaScript"], timeframe: "3-4 meses", level: "beginner" },
+                    { title: "Framework Frontend", description: "Especialízate en React, Vue o Angular", skills: ["React", "State Management"], timeframe: "4-6 meses", level: "intermediate" },
+                    { title: "Backend y Base de Datos", description: "Aprende Node.js con bases de datos", skills: ["Node.js", "SQL", "APIs"], timeframe: "4-6 meses", level: "intermediate" },
+                    { title: "Desarrollador Junior", description: "Consigue tu primer trabajo", skills: ["Portfolio", "GitHub", "Entrevistas"], timeframe: "1-3 meses", level: "professional" },
+                    { title: "Desarrollador Senior", description: "Lidera proyectos técnicos", skills: ["Liderazgo", "Arquitectura"], timeframe: "3-5 años", level: "expert" }
+                ]
+            },
+            frontend: {
+                title: "Frontend Developer",
+                description: "Especialista en interfaces de usuario",
+                steps: [
+                    { title: "HTML y CSS", description: "Domina la estructura y estilado web", skills: ["HTML", "CSS Grid", "Flexbox"], timeframe: "2-3 meses", level: "beginner" },
+                    { title: "JavaScript Moderno", description: "Aprende JavaScript ES6+", skills: ["ES6+", "DOM", "Async/await"], timeframe: "3-4 meses", level: "beginner" },
+                    { title: "Framework Frontend", description: "React, Vue o Angular", skills: ["React", "Components"], timeframe: "4-6 meses", level: "intermediate" },
+                    { title: "Frontend Junior", description: "Primer trabajo frontend", skills: ["Portfolio", "UI/UX"], timeframe: "1-3 meses", level: "professional" },
+                    { title: "Frontend Senior", description: "Lidera arquitectura frontend", skills: ["Micro-frontends", "Leadership"], timeframe: "3-5 años", level: "expert" }
+                ]
+            },
+            backend: {
+                title: "Backend Developer", 
+                description: "Especialista en servidores y bases de datos",
+                steps: [
+                    { title: "Lenguaje de Programación", description: "Python, Java o Node.js", skills: ["Python", "OOP", "Algorithms"], timeframe: "3-4 meses", level: "beginner" },
+                    { title: "Bases de Datos", description: "SQL y bases de datos", skills: ["SQL", "PostgreSQL"], timeframe: "2-3 meses", level: "beginner" },
+                    { title: "APIs y Web Services", description: "REST y GraphQL", skills: ["REST", "GraphQL"], timeframe: "3-4 meses", level: "intermediate" },
+                    { title: "Backend Junior", description: "Primer trabajo backend", skills: ["System Design", "Testing"], timeframe: "1-3 meses", level: "professional" },
+                    { title: "Backend Senior", description: "Sistemas escalables", skills: ["Distributed Systems", "Leadership"], timeframe: "3-5 años", level: "expert" }
+                ]
+            }
+        };
+
+        let currentPath = null;
+        let completedSteps = new Set();
+
+        function loadCareerPath() {
+            const select = document.getElementById('careerSelect');
+            const roadmap = document.getElementById('careerRoadmap');
+            const progress = document.getElementById('careerProgress');
+            
+            if (!select.value) {
+                roadmap.innerHTML = `
+                    <div class="roadmap-placeholder">
+                        <div class="placeholder-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+                            </svg>
+                        </div>
+                        <h3>Selecciona una carrera para ver tu roadmap</h3>
+                        <p>Elige una especialización arriba para descubrir los pasos que necesitas seguir</p>
+                    </div>
+                `;
+                progress.style.display = 'none';
+                return;
+            }
+
+            currentPath = careerPaths[select.value];
+            progress.style.display = 'block';
+            renderRoadmap();
+            updateProgress();
+        }
+
+        function renderRoadmap() {
+            const roadmap = document.getElementById('careerRoadmap');
+            
+            roadmap.innerHTML = `
+                <div class="roadmap-header">
+                    <h3>${currentPath.title}</h3>
+                    <p>${currentPath.description}</p>
+                </div>
+                <div class="roadmap-timeline">
+                    ${currentPath.steps.map((step, index) => `
+                        <div class="timeline-step ${completedSteps.has(index) ? 'completed' : ''}" data-step="${index}">
+                            <div class="step-marker">
+                                <div class="step-number">${index + 1}</div>
+                                <div class="step-check">✓</div>
+                            </div>
+                            <div class="step-content">
+                                <div class="step-header">
+                                    <h4>${step.title}</h4>
+                                    <span class="step-level level-${step.level}">${getLevelText(step.level)}</span>
+                                    <span class="step-timeframe">${step.timeframe}</span>
+                                </div>
+                                <p class="step-description">${step.description}</p>
+                                <div class="step-skills">
+                                    ${step.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                </div>
+                                <button class="step-toggle" onclick="toggleStep(${index})">
+                                    ${completedSteps.has(index) ? 'Marcar como pendiente' : 'Marcar como completado'}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function getLevelText(level) {
+            const levels = { beginner: 'Principiante', intermediate: 'Intermedio', professional: 'Profesional', expert: 'Experto' };
+            return levels[level] || level;
+        }
+
+        function toggleStep(stepIndex) {
+            if (completedSteps.has(stepIndex)) {
+                completedSteps.delete(stepIndex);
+            } else {
+                completedSteps.add(stepIndex);
+            }
+            renderRoadmap();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            if (!currentPath) return;
+            
+            const totalSteps = currentPath.steps.length;
+            const completed = completedSteps.size;
+            const percentage = Math.round((completed / totalSteps) * 100);
+            
+            document.getElementById('progressPercentage').textContent = `${percentage}%`;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${completed} de ${totalSteps} pasos completados`;
+        }
+    </script>
+</body>
+<script type="text/javascript" src="app.js"></script>
+</html>
